@@ -1,25 +1,3 @@
-"""
-Необходимо реализовать пользовательские команды, которые будут выполнять следующие функции:
-
-p - people - команда, которая спросит номер документа и выведет имя человека, которому он принадлежит;
-
-l - list - команда, которая выведет список всех документов в формате: passport "2207 876234" "Василий Гупкин";
-
-s - shelf - команда, которая спросит номер документа и выведет номер полки, на которой он находится;
-
-a - add - команда, которая добавит новый документ в каталог и в перечень полок, спросив его номер, типа, имя владельца
-    и номер полки, на котором он будет храниться;
-
------------------------------------------------------------------------------------------------------------------------
-
-d - delete - команда, которая спросит номер документа и удалит его из каталога и из перечня полок;
-
-m - move - команда, которая спросит номер документа и целевую полку и переместит его с текущей полки на целевую;
-
-as - add shelf - команда, которая спросит номер новой полки и добавит ее в перечень.
-
-"""
-
 # Каталог документов
 documents = [
     {
@@ -38,6 +16,11 @@ documents = [
         "type": "insurance",
         "number": "10006",
         "name": "Аристарх Павлов"
+    },
+
+    {
+        "type": "passport",
+        "number": "111999/89",
     }
 ]
 
@@ -48,7 +31,7 @@ directories = {
     '3': []
 }
 
-commands = ['p', 'l', 's', 'a', 'd', 'm', 'as']
+commands = ['p', 'l', 's', 'a', 'd', 'm', 'as', 'an']
 
 
 def get_name_by_document(number: str) -> str:
@@ -76,7 +59,7 @@ def add_new_document(doc_type: str, doc_number: str, doc_owner: str, shelf: str)
             return "Такой документ уже есть в базе!"
         else:
             documents.append({'type': doc_type, 'number': doc_number, 'name': doc_owner})
-            directories[shelf].append(document_number)
+            directories[shelf].append(doc_number)
             return f"Документ добавлен в базу и будет храниться на полке {shelf}"
 
 
@@ -106,8 +89,18 @@ def add_new_place(shelf: str) -> str:
     return f"Полка под номером '{shelf}' успешно добавлена!"
 
 
-if __name__ == '__main__':
+def all_owner_names() -> list:
+    name_list = list()
+    for document in documents:
+        try:
+            name = document['name']
+            name_list.append(name)
+        except KeyError:
+            print(f"У документа под номером {document['number']} нет владельца")
+    return name_list
 
+
+def main():
     main_flag = True
     while main_flag:
 
@@ -121,7 +114,8 @@ if __name__ == '__main__':
               "a - добавление нового документа в каталог и перечень полок\n"
               "d - удаление документа по номеру из каталога и перечня полок\n"
               "m - перемещение документа в целевую полку\n"
-              "as - добавление новой полки\n")
+              "as - добавление новой полки\n"
+              "an - выводит имена всех владельцев документов\n")
 
         command = None
         global_flag = True
@@ -170,10 +164,12 @@ if __name__ == '__main__':
 
             shelf_number = None
             shelf_flag = True
+            exist_shelf = list(directories.keys())
             while shelf_flag:
-                shelf_number = input(f"Введите номер полки, на которую хотите поместить дело (сейчас полок: {len(directories)}): ")
-                if int(shelf_number) > len(directories) or int(shelf_number) == 0 :
-                    print(f"Всего доступно полок - {len(directories)}")
+                shelf_number = input(
+                    f"Введите номер полки, на которую хотите поместить дело (доступные полки: {exist_shelf}): ")
+                if shelf_number not in exist_shelf or int(shelf_number) == 0:
+                    print(f"Доступные полки - {exist_shelf}")
                     continue
                 else:
                     shelf_flag = False
@@ -224,6 +220,17 @@ if __name__ == '__main__':
 
             print(add_new_place(shelf_number))
 
+        elif command == "an":
+            print(f"\nСписок имен всех владельцев документов:")
+            print("-" * 45)
+
+            for name in all_owner_names():
+                print(name)
+
         end_program = input("Хотите завершить работу программы (Да/Нет)? ")
         if end_program.capitalize() == "Да":
             main_flag = False
+
+
+if __name__ == '__main__':
+    main()
